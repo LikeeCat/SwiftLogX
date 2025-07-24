@@ -1,6 +1,10 @@
 # SwiftLogX
 
+![Swift](https://img.shields.io/badge/Swift-5.9-orange.svg) ![iOS](https://img.shields.io/badge/iOS-14.0%2B-blue.svg) ![macOS](https://img.shields.io/badge/macOS-13.0%2B-lightgrey.svg)
+
 SwiftLogX is a powerful Swift logging framework that not only captures and redirects `NSLog` output but also provides a convenient web interface for real-time viewing and management of your application's logs in a browser. Additionally, it offers an `#xlog` macro for easy custom log recording in your code.
+
+**Compatibility:** Swift 5.9+, iOS 14.0+, macOS 13.0+
 
 ## Features
 
