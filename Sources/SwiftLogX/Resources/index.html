@@ -1,312 +1,374 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en-US">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>日志筛选器</title>
+    <title>Log Filter / 日志筛选器</title>
     <style>
-        /* 基本样式重置与排版 */
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --accent-color: #4cc9f0;
+            --background-light: #f8f9fa;
+            --background-dark: #e9ecef;
+            --text-primary: #212529;
+            --text-secondary: #495057;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.25s cubic-bezier(0.645, 0.045, 0.355, 1);
+        }
+
+        /* Base Styles */
         html, body {
             margin: 0;
             padding: 0;
             height: 100%;
-            background: #f3f4f6; /* 更亮的浅灰色背景，提升整体亮度 */
-            color: #374151; /* 默认文本颜色，更清晰的深灰色 */
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            overflow: hidden; /* 防止页面整体滚动条出现，由内部元素控制 */
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            overflow: hidden;
+            line-height: 1.5;
         }
 
         body {
             display: flex;
             flex-direction: column;
-            height: 100vh; /* 确保body占满整个视口高度 */
+            height: 100vh;
+            padding: 16px;
+            box-sizing: border-box;
         }
 
-        /* 页面大标题样式 - 现已不使用，但保留以防万一 */
-        .main-page-title {
-            margin: 16px 0;
-            font-weight: 700;
-            color: #2563eb; /* 标题颜色，鲜艳的蓝色 */
-            text-align: center;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* 轻微阴影 */
-        }
-
-        /* 主容器布局 */
+        /* Main Container */
         .container {
-            flex: 1; /* 占据剩余空间 */
-            display: flex;
-            width: 100vw; /* 占据整个视口宽度 */
-            gap: 24px; /* 元素间距 */
-            box-sizing: border-box; /* 包含padding在内的盒模型 */
-            padding: 24px;
-            overflow: hidden; /* 防止内部元素溢出产生滚动条 */
-        }
-
-        /* 筛选器容器样式 */
-        .filter-container {
-            background: #ffffff; /* 筛选容器背景，纯白色 */
-            border-radius: 12px;
-            padding: 24px 24px 16px;
-            width: 280px; /* 固定宽度 */
+            flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 24px;
-            box-sizing: border-box;
-            flex-shrink: 0; /* 不压缩此容器 */
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* 更柔和的阴影 */
-            border: 1px solid #e5e7eb; /* 轻微边框 */
-        }
-        
-        /* 左侧面板内部标题样式 */
-        .filter-container h2 {
-            margin-top: 0;
-            margin-bottom: 16px; /* 与下方元素的间距 */
-            font-size: 22px; /* 调整字体大小 */
-            color: #2563eb; /* 标题颜色，与按钮主色调一致 */
-            text-align: center; /* 居中显示 */
-            font-weight: 700;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            gap: 12px;
+            padding: 16px;
         }
 
-        /* 按钮样式 */
+        /* Top Controls Section */
+        .top-controls-section {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 12px;
+            flex-shrink: 0;
+            width: 100%;
+        }
+
+        /* Search Section */
+        .log-search-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-width: 250px;
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 12px 16px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .log-search-section input {
+            flex-grow: 1;
+            width: 100%;
+            padding: 8px 12px;
+            padding-right: 50px;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: 13px;
+            background: white;
+            color: var(--text-primary);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .log-search-section input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .match-count {
+            position: absolute;
+            right: 12px;
+            color: var(--text-secondary);
+            font-size: 11px;
+            background-color: rgba(0, 0, 0, 0.03);
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .search-nav-buttons {
+            display: flex;
+            gap: 6px;
+            justify-content: flex-end;
+        }
+
+        /* Operations Section */
+        .operations-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 0 0 auto;
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 12px 16px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .operations-buttons-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            justify-content: flex-start;
+        }
+        
+        .operations-section h2 {
+            display: none;
+        }
+
+        /* Button Styles */
         button {
-            background: linear-gradient(to right, #3b82f6, #2563eb); /* 按钮渐变背景，更活泼的蓝色 */
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             color: white;
             border: none;
-            padding: 14px 0;
-            font-weight: 700;
-            border-radius: 10px; /* 略微圆润的按钮 */
+            padding: 8px 14px;
+            font-weight: 500;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 16px;
-            user-select: none; /* 防止文本被选中 */
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15); /* 按钮阴影 */
-            transition: all 0.25s ease; /* 更平滑的过渡 */
+            font-size: 13px;
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         button:hover {
-            background: linear-gradient(to right, #2563eb, #1d4ed8); /* hover时的渐变背景 */
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2); /* hover时的阴影增强 */
-            transform: translateY(-2px); /* 细微上浮效果 */
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
         
-        /* 暂停/恢复按钮的特殊样式 */
+        button:disabled {
+            background: #e5e7eb;
+            color: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         #pauseResumeContainer {
             display: flex;
-            gap: 10px; /* 两个按钮之间的间距 */
+            gap: 6px;
         }
 
-        #pauseBtn, #resumeBtn {
-            flex: 1; /* 让按钮平分空间 */
-            padding: 10px 0; /* 调整垂直内边距 */
-            font-size: 14px; /* 调整字体大小 */
-        }
-
-        /* 日志状态显示区域 */
+        /* Log Status */
         #logStatus {
-            margin-top: 10px; /* 与上方按钮的间距 */
-            font-size: 14px;
-            color: #6b7280; /* 状态文本颜色，更柔和的深灰色 */
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
             text-align: center;
-            min-height: 20px; /* 确保即使没有内容也占位 */
-            position: relative; /* For positioning the spinner */
-            padding-left: 0; /* Adjusted by JS based on spinner */
+            padding: 6px 12px;
+            background: rgba(0, 0, 0, 0.03);
+            border-radius: 4px;
+            transition: var(--transition);
             display: flex;
             align-items: center;
-            justify-content: center; /* Centered by default */
-            transition: padding-left 0.3s ease; /* Smooth padding transition */
+            justify-content: center;
+            gap: 6px;
         }
 
         #logStatus.paused {
-            color: #fcd34d; /* 暂停时的颜色，保持醒目的黄色 */
-            font-weight: 600;
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--warning-color);
+            font-weight: 500;
         }
 
-        /* 新增：转圈动画的关键帧 */
+        /* Spinner Animation */
         @keyframes spinner {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
 
-        /* 新增：应用转圈动画的类 */
         #logStatus.spinning::before {
             content: '';
-            position: absolute;
-            left: 5px; /* Position to the left of the text */
-            top: 50%;
-            width: 14px;
-            height: 14px;
-            margin-top: -7px; /* Center vertically */
-            border: 2px solid rgba(156, 163, 175, 0.3); /* 轻微透明的灰色边框 */
-            border-top: 2px solid #2563eb; /* 活泼的蓝色顶部边框，形成旋转效果 */
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(67, 97, 238, 0.2);
+            border-top: 2px solid var(--primary-color);
             border-radius: 50%;
-            animation: spinner 0.8s linear infinite; /* 0.8s per rotation, linear, infinite */
+            animation: spinner 0.8s linear infinite;
         }
 
-        /* 搜索框容器及输入框样式 */
-        .log-search-container {
-            flex-shrink: 0;
-            margin-bottom: 8px;
-            display: flex; /* 改为flex布局以容纳新元素 */
-            flex-direction: column; /* 垂直堆叠搜索框和按钮 */
-            gap: 8px; /* 搜索框和按钮组之间的间距 */
-        }
-
-        .search-input-wrapper { /* 新增：搜索输入框和计数包裹层 */
-            position: relative;
-            display: flex; /* 让输入框和计数并排 */
-            align-items: center;
-        }
-
-        .log-search-container input {
-            flex-grow: 1; /* 让输入框填充可用空间 */
-            width: auto; /* 移除固定宽度 */
-            padding-right: 60px; /* 为计数留出空间 */
-            border-radius: 10px; /* 略微圆润 */
-            border: 1px solid #d1d5db; /* 更柔和的边框 */
-            font-size: 15px;
-            background: #ffffff; /* 白色背景 */
-            color: #374151; /* 文本颜色 */
-            outline-offset: 2px;
-            outline-color: #2563eb; /* 焦点时使用蓝色 */
-            box-sizing: border-box; /* 包含padding在内 */
-            transition: all 0.3s ease;
-            padding: 10px 14px; /* 调整内边距 */
-        }
-        .log-search-container input:focus {
-            border-color: #2563eb; /* 焦点时边框变色 */
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); /* 焦点时光晕效果 */
-        }
-
-        .match-count { /* 新增：匹配计数样式 */
-            position: absolute;
-            right: 12px;
-            color: #6b7280;
-            font-size: 13px;
-            background-color: #f9fafb; /* 浅色背景，使其更明显 */
-            padding: 3px 6px;
-            border-radius: 6px;
-            border: 1px solid #e5e7eb;
-            white-space: nowrap; /* 防止换行 */
-        }
-
-        .search-nav-buttons { /* 新增：导航按钮容器样式 */
-            display: flex;
-            gap: 8px; /* 按钮之间间距 */
-            justify-content: flex-end; /* 按钮靠右对齐 */
-        }
-
-        .search-nav-buttons button { /* 导航按钮通用样式 */
-            padding: 8px 12px; /* 调整按钮内边距 */
-            font-size: 13px;
-            flex-shrink: 0; /* 防止按钮被压缩 */
-            background: linear-gradient(to right, #60a5fa, #3b82f6); /* 稍微柔和一些的蓝色按钮 */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .search-nav-buttons button:hover {
-            background: linear-gradient(to right, #3b82f6, #2563eb);
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-            transform: translateY(-1px);
-        }
-
-        .search-nav-buttons button:disabled { /* 禁用按钮样式 */
-            background: #e5e7eb;
-            color: #9ca3af;
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
-        }
-
-        /* 日志内容显示区域 */
-        .log-content-wrapper {
-            flex: 1; /* 占据剩余空间 */
+        /* Log Display Section */
+        .log-display-section {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            min-width: 0; /* 允许 flex 项收缩到比其内容更小的尺寸 */
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            padding: 16px;
+            overflow: hidden;
         }
+
         #logContent {
             flex: 1;
-            background: #ffffff; /* 日志区域背景，纯白色 */
-            border-radius: 12px;
-            padding: 24px;
-            font-family: monospace; /* 等宽字体 */
-            font-size: 15px;
-            line-height: 1.6; /* 增加行高提高可读性 */
-            white-space: pre-wrap; /* 关键：保留空白并自动换行 */
-            word-wrap: break-word; /* 关键：单词内部也可以断行，防止超长单词不换行 */
-            overflow-y: auto; /* 垂直滚动条 */
-            overflow-x: hidden; /* 关键：隐藏水平滚动条，强制换行 */
-            color: #1e293b; /* 日志文本颜色，深色以确保可读性 */
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* 柔和阴影 */
-            border: 1px solid #e5e7eb; /* 轻微边框 */
-            scroll-behavior: smooth; /* 平滑滚动 */
+            font-family: 'SF Mono', 'Roboto Mono', Menlo, monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-y: auto;
+            overflow-x: hidden;
+            color: var(--text-primary);
+            scroll-behavior: smooth;
+            padding-right: 8px;
         }
 
-        /* 高亮关键词样式 */
+        /* Log Line Styles */
+        .log-line {
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            background: white;
+            border-left: 3px solid var(--primary-color);
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+            transition: var(--transition);
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInSlideUp 0.3s ease-out forwards;
+        }
+
+        .log-line:nth-child(even) {
+            background: rgba(67, 97, 238, 0.03);
+        }
+
+        .log-line:last-child {
+            margin-bottom: 0;
+        }
+
+        .log-line:hover {
+            transform: translateY(-1px) translateX(2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        @keyframes fadeInSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Highlight Styles */
         #logContent mark {
-            background: #a7f3d0; /* 更鲜明清新的绿色高亮 */
-            color: #065f46; /* 高亮文本颜色，深绿色 */
+            background: linear-gradient(120deg, rgba(76, 201, 240, 0.3) 0%, rgba(76, 201, 240, 0.7) 100%);
+            color: var(--text-primary);
             padding: 0.1em 0.3em;
-            border-radius: 0.2em;
+            border-radius: 3px;
         }
 
-        /* 新增：导航高亮样式 */
         #logContent .navigation-highlight {
-            background: #a5b4fc; /* 亮蓝色背景，与搜索高亮区分 */
-            color: #312e81; /* 深紫色文本，更醒目 */
-            font-weight: bold;
+            background: linear-gradient(120deg, rgba(67, 97, 238, 0.3) 0%, rgba(67, 97, 238, 0.7) 100%);
+            color: var(--text-primary);
+            font-weight: 500;
             padding: 0.1em 0.3em;
-            border-radius: 0.2em;
-            /* 移除 transition，因为不再自动消失 */
+            border-radius: 3px;
+            animation: pulseHighlight 0.5s ease-out 1;
         }
 
-        /* 未找到匹配日志时的文本颜色 */
-        #logContent span[style*="color: #ef4444;"] {
-            color: #ef4444; /* 保持红色警告色 */
+        @keyframes pulseHighlight {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.3); }
+            50% { transform: scale(1.02); box-shadow: 0 0 0 6px rgba(67, 97, 238, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(67, 97, 238, 0); }
         }
 
-        /* 响应式设计 */
+        /* Message Styles */
+        #logContent .no-match-message {
+            color: var(--danger-color);
+            text-align: center;
+            padding: 24px;
+            font-size: 14px;
+        }
+
+        #logContent .initial-message {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 24px;
+            font-size: 14px;
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
             .container {
+                padding: 12px;
+                gap: 8px;
+            }
+
+            .top-controls-section {
                 flex-direction: column;
-                gap: 16px;
-                padding: 16px;
+                gap: 8px;
             }
 
-            .filter-container {
+            .log-search-section,
+            .operations-section {
                 width: 100%;
+                padding: 10px;
             }
 
-            /* 移动端日志内容自适应高度 */
-            #logContent {
-                max-height: none; /* 移除固定高度限制 */
-                height: 50vh; /* 在小屏幕上给一个相对高度，防止过高 */
+            .operations-buttons-row {
+                justify-content: center;
+                gap: 6px;
             }
 
-            .search-nav-buttons {
-                justify-content: center; /* 移动端按钮居中 */
+            button {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+
+            #logStatus {
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+
+            .log-line {
+                padding: 6px 10px;
+                font-size: 12px;
             }
         }
     </style>
 </head>
 <body>
 
-    <div class="container" role="region" aria-label="日志筛选和显示">
-        <div class="filter-container" role="region" aria-label="日志筛选条件">
-            <h2>日志筛选器</h2>
-            
-            <div id="pauseResumeContainer">
-                <button id="pauseBtn" aria-label="暂停日志">暂停日志</button>
-                <button id="resumeBtn" aria-label="恢复日志">恢复日志</button>
-            </div>
-
-            <button id="exportLogBtn" aria-label="导出完整日志到文件" title="导出所有缓存日志">导出日志</button>
-
-            <div id="logStatus" role="status" aria-live="polite">
-                </div>
-        </div>
-
-        <div class="log-content-wrapper">
-            <div class="log-search-container" role="search" aria-label="搜索日志内容">
+    <div class="container" role="region" aria-label="Log filtering and display">
+        <div class="top-controls-section">
+            <div class="log-search-section" role="search" aria-label="Search log content">
                 <div class="search-input-wrapper">
                     <input
                         type="search"
@@ -317,46 +379,184 @@
                     <span id="matchCount" class="match-count" aria-live="polite">0 / 0</span>
                 </div>
                 <div class="search-nav-buttons">
-                    <button id="prevMatchBtn" aria-label="上一条匹配结果" title="上一条 (Alt+Up)">上一条</button>
-                    <button id="nextMatchBtn" aria-label="下一条匹配结果" title="下一条 (Alt+Down)">下一条</button>
+                    <button id="prevMatchBtn" aria-label="上一条匹配结果" title="Previous (Alt+Up)">上一条</button>
+                    <button id="nextMatchBtn" aria-label="下一条匹配结果" title="Next (Alt+Down)">下一条</button>
                 </div>
             </div>
-            <pre id="logContent" tabindex="0" aria-live="polite" aria-atomic="true">
-正在连接到日志服务，等待实时日志...
-            </pre>
+
+            <div class="operations-section" role="region" aria-label="Log operations and settings">
+                <h2 id="filterTitle">日志操作</h2>
+                
+                <div class="operations-buttons-row">
+                    <div id="pauseResumeContainer">
+                        <button id="pauseBtn" aria-label="暂停日志">暂停日志</button>
+                        <button id="resumeBtn" aria-label="恢复日志">恢复日志</button>
+                    </div>
+
+                    <button id="exportLogBtn" aria-label="导出完整日志到文件" title="Export all cached logs">导出日志</button>
+
+                    <button id="languageToggle" aria-label="切换语言">English / 中文</button>
+                </div>
+
+                <div id="logStatus" role="status" aria-live="polite">
+                </div>
+            </div>
+
+        </div> <div class="log-display-section">
+            <div id="logContent" tabindex="0" aria-live="polite" aria-atomic="true">
+                <div class="initial-message">正在连接到日志服务，等待实时日志...</div>
+            </div>
         </div>
     </div>
 
     <script>
-        let currentLogData = []; // 存储所有接收到的日志行
-        let logWebSocket = null; // WebSocket 实例
-        // **** 已将最大日志行数改为 100,000,000 ****
+        let currentLogData = []; // Stores all received log lines
+        let logWebSocket = null; // WebSocket instance
         const MAX_LOG_LINES = 100000000;
         let isLogProcessingPaused = false;
+        let currentLanguage = 'en-US'; // Default language
 
-        // 获取 DOM 元素
+        // Get DOM elements
         const logContentElement = document.getElementById('logContent');
         const logStatusElement = document.getElementById('logStatus');
         const logSearchInput = document.getElementById('logSearch');
         const pauseButton = document.getElementById('pauseBtn');
         const resumeButton = document.getElementById('resumeBtn');
-        const exportLogButton = document.getElementById('exportLogBtn'); // 新增：导出按钮
+        const exportLogButton = document.getElementById('exportLogBtn');
+        const languageToggle = document.getElementById('languageToggle');
 
-        // 新增 DOM 元素
+        // New DOM elements
         const matchCountElement = document.getElementById('matchCount');
         const prevMatchBtn = document.getElementById('prevMatchBtn');
         const nextMatchBtn = document.getElementById('nextMatchBtn');
+        const filterTitle = document.getElementById('filterTitle');
 
-        let matchedLogLines = []; // 存储当前匹配到的日志行在 currentLogData 中的原始索引
-        let currentMatchIndex = -1; // 当前高亮匹配项在 matchedLogLines 数组中的索引
+        let matchedLogLines = []; // Stores original indices of currently matched log lines in currentLogData
+        let currentMatchIndex = -1; // Index of the currently highlighted match in the matchedLogLines array
 
-        const navigationHighlightClass = 'navigation-highlight'; // 定义导航高亮的CSS类名
+        const navigationHighlightClass = 'navigation-highlight'; // Define CSS class name for navigation highlight
+
+        // Language translations
+        const translations = {
+            'zh-CN': {
+                filterTitle: '日志操作',
+                pauseLog: '暂停日志',
+                resumeLog: '恢复日志',
+                exportLog: '导出日志',
+                searchPlaceholder: '搜索日志内容 (用逗号分隔多个关键词，例如: error, warn)...',
+                previous: '上一条',
+                next: '下一条',
+                connecting: '正在连接到日志服务，等待实时日志...',
+                noMatch: (keyword) => `<div class="no-match-message">未找到匹配 "${keyword}" 的日志。</div>`,
+                streaming: (count) => `实时日志流 (${count} 条)`,
+                streamingSearch: (keyword) => `实时日志流 (搜索: "${keyword}")`,
+                pausedStatus: (count) => `日志流已暂停，当前缓存 ${count} 条。`,
+                logExported: (filename) => `日志已导出到 ${filename}`,
+                logPauseConsole: '日志处理已暂停。',
+                logResumeConsole: '日志处理已恢复。',
+                previousTitle: '上一条 (Alt+Up)',
+                nextTitle: '下一条 (Alt+Down)',
+                exportTitle: '导出所有缓存日志',
+                ariaPause: '暂停日志',
+                ariaResume: '恢复日志',
+                ariaExport: '导出完整日志到文件',
+                ariaSearch: '搜索日志内容',
+                ariaPrev: '上一条匹配结果',
+                ariaNext: '下一条匹配结果',
+                ariaToggleLang: '切换语言',
+                ariaOperationsRegion: '日志操作和设置',
+                ariaLogDisplayRegion: '日志筛选和显示',
+                disconnected: '连接已断开，尝试重连中...',
+                error: '连接错误，尝试重连中...'
+            },
+            'en-US': {
+                filterTitle: 'Log Operations',
+                pauseLog: 'Pause Log',
+                resumeLog: 'Resume Log',
+                exportLog: 'Export Log',
+                searchPlaceholder: 'Search log content (separate keywords with commas, e.g.: error, warn)...',
+                previous: 'Previous',
+                next: 'Next',
+                connecting: 'Connecting to log service, awaiting real-time logs...',
+                noMatch: (keyword) => `<div class="no-match-message">No logs found matching "${keyword}".</div>`,
+                streaming: (count) => `Real-time log stream (${count} lines)`,
+                streamingSearch: (keyword) => `Real-time log stream (Search: "${keyword}")`,
+                pausedStatus: (count) => `Log stream paused, ${count} lines cached.`,
+                logExported: (filename) => `Log exported to ${filename}`,
+                logPauseConsole: 'Log processing paused.',
+                logResumeConsole: 'Log processing resumed.',
+                previousTitle: 'Previous (Alt+Up)',
+                nextTitle: 'Next (Alt+Down)',
+                exportTitle: 'Export all cached logs',
+                ariaPause: 'Pause logs',
+                ariaResume: 'Resume logs',
+                ariaExport: 'Export full log to file',
+                ariaSearch: 'Search log content',
+                ariaPrev: 'Previous match result',
+                ariaNext: 'Next match result',
+                ariaToggleLang: 'Toggle language',
+                ariaOperationsRegion: 'Log operations and settings',
+                ariaLogDisplayRegion: 'Log filtering and display',
+                disconnected: 'Connection lost, attempting to reconnect...',
+                error: 'Connection error, attempting to reconnect...'
+            }
+        };
 
         /**
-         * 更新日志状态显示文本。
-         * @param {string} message - 要显示的状态信息。
-         * @param {boolean} isPausedState - 是否为暂停状态，用于添加特殊样式。
-         * @param {boolean} addSpinningAnimation - 是否添加转圈动画类。
+         * Updates the UI text based on the current language.
+         */
+        function updateUIforLanguage() {
+            const lang = currentLanguage;
+            filterTitle.textContent = translations[lang].filterTitle;
+            pauseButton.textContent = translations[lang].pauseLog;
+            resumeButton.textContent = translations[lang].resumeLog;
+            exportLogButton.textContent = translations[lang].exportLog;
+            logSearchInput.placeholder = translations[lang].searchPlaceholder;
+            prevMatchBtn.textContent = translations[lang].previous;
+            nextMatchBtn.textContent = translations[lang].next;
+            languageToggle.textContent = lang === 'zh-CN' ? 'English / 中文' : '中文 / English';
+
+            // Update aria-labels and titles
+            pauseButton.setAttribute('aria-label', translations[lang].ariaPause);
+            resumeButton.setAttribute('aria-label', translations[lang].ariaResume);
+            exportLogButton.setAttribute('aria-label', translations[lang].ariaExport);
+            exportLogButton.setAttribute('title', translations[lang].exportTitle);
+            logSearchInput.setAttribute('aria-label', translations[lang].ariaSearch);
+            prevMatchBtn.setAttribute('aria-label', translations[lang].ariaPrev);
+            prevMatchBtn.setAttribute('title', translations[lang].previousTitle);
+            nextMatchBtn.setAttribute('aria-label', translations[lang].ariaNext);
+            nextMatchBtn.setAttribute('title', translations[lang].nextTitle);
+            languageToggle.setAttribute('aria-label', translations[lang].ariaToggleLang);
+
+            // Update region aria-labels
+            document.querySelector('.container').setAttribute('aria-label', translations[lang].ariaLogDisplayRegion);
+            document.querySelector('.operations-section').setAttribute('aria-label', translations[lang].ariaOperationsRegion);
+            document.querySelector('.log-search-section').setAttribute('aria-label', translations[lang].ariaSearch);
+
+            // Re-render log status and content based on new language
+            if (isLogProcessingPaused) {
+                updateLogStatus(translations[lang].pausedStatus(currentLogData.length), true, false);
+            } else {
+                const logSearchInputVal = logSearchInput.value.trim();
+                const hasKeywords = logSearchInputVal.split(',').map(k => k.trim()).filter(k => k.length > 0).length > 0;
+                if (currentLogData.length === 0) {
+                     updateLogStatus(translations[lang].connecting, false, true);
+                } else if (hasKeywords) {
+                    updateLogStatus(translations[lang].streamingSearch(escapeHTML(logSearchInputVal)), false, false);
+                } else {
+                    updateLogStatus(translations[lang].streaming(currentLogData.length), false, false);
+                }
+            }
+
+            // Re-display filtered logs to apply any text changes
+            displayFilteredLogs();
+        }
+
+        /**
+         * Update log status display text.
+         * @param {string} message - The status message to display.
+         * @param {boolean} isPausedState - Whether it's a paused state, for special styling.
+         * @param {boolean} addSpinningAnimation - Whether to add a spinning animation class.
          */
         function updateLogStatus(message, isPausedState = false, addSpinningAnimation = false) {
             logStatusElement.textContent = message;
@@ -371,20 +571,12 @@
             } else {
                 logStatusElement.classList.remove('spinning');
             }
-
-            if (addSpinningAnimation) {
-                logStatusElement.style.paddingLeft = '25px';
-                logStatusElement.style.justifyContent = 'flex-start';
-            } else {
-                logStatusElement.style.paddingLeft = '0';
-                logStatusElement.style.justifyContent = 'center';
-            }
         }
 
         /**
-         * 转义 HTML 字符，防止 XSS 攻击和标签干扰。
-         * @param {string} str - 需要转义的字符串。
-         * @returns {string} 转义后的字符串。
+         * Escapes HTML characters to prevent XSS attacks and tag interference.
+         * @param {string} str - The string to escape.
+         * @returns {string} The escaped string.
          */
         function escapeHTML(str) {
             return str.replace(/[&<>"']/g, function (m) {
@@ -399,10 +591,10 @@
         }
 
         /**
-         * 高亮显示日志中的关键词。
-         * @param {string} text - 完整的日志文本。
-         * @param {string[]} keywords - 需要高亮的关键词数组。
-         * @returns {string} 包含高亮 HTML 标签的日志文本。
+         * Highlights keywords in the log.
+         * @param {string} text - The full log text.
+         * @param {string[]} keywords - Array of keywords to highlight.
+         * @returns {string} Log text with highlight HTML tags.
          */
         function highlightKeywords(text, keywords) {
             if (!keywords || keywords.length === 0) return escapeHTML(text);
@@ -418,11 +610,12 @@
             });
             return highlightedText;
         }
+
         /**
-         * 将日志中的时间戳转换为本地格式时间。
-         * 假设日志格式中时间戳为 t:<数字>，例如 t:1678886400.123
-         * @param {string} line - 单行日志文本。
-         * @returns {string} 转换时间后的日志文本。
+         * Converts timestamp in log to local formatted time.
+         * Assumes timestamp in log format is t:<number>, e.g., t:1678886400.123
+         * @param {string} line - A single log line.
+         * @returns {string} Log text with converted time.
          */
         function convertLogTimeToLocal(line) {
             const match = line.match(/t:(\d+\.\d+)/);
@@ -435,28 +628,24 @@
             const formattedTime = date.toLocaleString();
             return line.replace(`t:${match[1]}`, `time:${formattedTime}`);
         }
+
         /**
-         * 移除所有临时的导航高亮。
+         * Removes all temporary navigation highlights.
          * @returns {void}
          */
         function removeNavigationHighlights() {
-            // 获取所有带有导航高亮类的元素
             const previousHighlights = logContentElement.querySelectorAll(`.${navigationHighlightClass}`);
             previousHighlights.forEach(el => {
                 const parent = el.parentNode;
-                // 确保父节点存在且该元素是其子节点，以避免错误
                 if (parent) {
-                    // 将高亮元素替换为其内部的 HTML 内容，从而移除导航高亮但保留搜索高亮 (mark标签)
                     el.outerHTML = el.innerHTML;
                 }
             });
-            // 重新规范化 DOM，移除可能因替换而产生的空文本节点或多余标签
             logContentElement.normalize();
         }
 
         /**
-         * 根据搜索关键词过滤并显示日志。
-         * 重要：每次重新显示日志时，会清除所有现有的导航高亮，并基于当前的搜索词重新生成显示内容。
+         * Filters and displays logs based on search keywords.
          * @returns {void}
          */
         function displayFilteredLogs() {
@@ -465,51 +654,48 @@
                                                     .map(k => k.trim())
                                                     .filter(k => k.length > 0);
 
-            let logsToDisplay = [];
-            matchedLogLines = []; // 每次过滤前清空匹配数组
+            let logsToRender = [];
+            matchedLogLines = [];
 
-            // 无论是否有搜索关键词，都需要清除旧的导航高亮
             removeNavigationHighlights();
 
             if (searchKeywords.length > 0) {
-                // 有搜索关键词时，进行过滤和搜索高亮
                 currentLogData.forEach((line, index) => {
                     const lowerCaseLine = line.toLowerCase();
                     const isMatch = searchKeywords.some(keyword => lowerCaseLine.includes(keyword.toLowerCase()));
                     if (isMatch) {
-                        logsToDisplay.push(line);
-                        matchedLogLines.push(index); // 存储原始日志数据中的索引
+                        const timeConvertedLine = convertLogTimeToLocal(line);
+                        const highlightedLine = highlightKeywords(timeConvertedLine, searchKeywords);
+                        logsToRender.push({ html: highlightedLine, originalIndex: index });
+                        matchedLogLines.push(index);
                     }
                 });
 
-                if (logsToDisplay.length === 0) {
-                    logContentElement.innerHTML = `<span style="color: #ef4444;">未找到匹配 "${escapeHTML(logSearchInputVal)}" 的日志。</span>`;
+                if (logsToRender.length === 0) {
+                    logContentElement.innerHTML = translations[currentLanguage].noMatch(escapeHTML(logSearchInputVal));
                 } else {
-                    const processedLogs = logsToDisplay.map(line => {
-                        const timeConvertedLine = convertLogTimeToLocal(line);
-                        return highlightKeywords(timeConvertedLine, searchKeywords); // 应用搜索高亮
-                    });
-                    logContentElement.innerHTML = processedLogs.join('\n');
+                    logContentElement.innerHTML = logsToRender.map(item =>
+                        `<div class="log-line" data-original-index="${item.originalIndex}">${item.html}</div>`
+                    ).join('');
                 }
             } else {
-                // 没有搜索关键词时，显示所有日志，但不应用任何高亮
-                logsToDisplay = [...currentLogData]; // 复制一份所有日志
-                matchedLogLines = currentLogData.map((_, index) => index); // 匹配列表为所有日志的索引
-                
-                const processedLogs = logsToDisplay.map(line => {
+                logsToRender = currentLogData.map((line, index) => {
                     const timeConvertedLine = convertLogTimeToLocal(line);
-                    return escapeHTML(timeConvertedLine); // 不应用关键词高亮
+                    return { html: escapeHTML(timeConvertedLine), originalIndex: index };
                 });
-                logContentElement.innerHTML = processedLogs.join('\n');
+                matchedLogLines = currentLogData.map((_, index) => index);
+                
+                logContentElement.innerHTML = logsToRender.map(item =>
+                    `<div class="log-line" data-original-index="${item.originalIndex}">${item.html}</div>`
+                ).join('');
             }
             
-            // 更新匹配计数和导航状态
-            updateMatchNavigation(true); // 默认高亮第一个（如果存在）
+            updateMatchNavigation(true);
         }
 
         /**
-         * 更新匹配计数显示和导航按钮的禁用状态。
-         * @param {boolean} highlightFirst - 是否在更新后高亮第一个匹配项。
+         * Updates match count display and disables state of navigation buttons.
+         * @param {boolean} highlightFirst - Whether to highlight the first match after updating.
          * @returns {void}
          */
         function updateMatchNavigation(highlightFirst = false) {
@@ -530,84 +716,54 @@
 
             matchCountElement.textContent = `${totalMatches > 0 ? (currentMatchIndex + 1) : 0} / ${totalMatches}`;
 
-            // 如果没有搜索关键词，禁用导航按钮
             if (!hasSearchKeywords) {
                 prevMatchBtn.disabled = true;
                 nextMatchBtn.disabled = true;
-                removeNavigationHighlights(); // 确保在无搜索时移除所有导航高亮
-                currentMatchIndex = -1; // 重置当前高亮索引
+                removeNavigationHighlights();
+                currentMatchIndex = -1;
             } else {
                 prevMatchBtn.disabled = totalMatches === 0 || currentMatchIndex <= 0;
                 nextMatchBtn.disabled = totalMatches === 0 || currentMatchIndex >= totalMatches - 1;
 
-                // 仅当有匹配项且当前索引有效时才执行滚动和高亮
                 if (currentMatchIndex !== -1) {
                     scrollToMatch(currentMatchIndex);
                 } else {
-                    // 如果有搜索词但无匹配，也确保移除导航高亮
                     removeNavigationHighlights();
                 }
             }
         }
 
         /**
-         * 滚动到并持续高亮指定的匹配项。
-         * @param {number} index - 匹配项在 matchedLogLines 数组中的索引。
+         * Scrolls to and persistently highlights the specified match.
+         * @param {number} index - Index of the match in the matchedLogLines array.
          * @returns {void}
          */
         function scrollToMatch(index) {
             const logSearchInputVal = logSearchInput.value.trim();
             const hasSearchKeywords = logSearchInputVal.split(',').map(k => k.trim()).filter(k => k.length > 0).length > 0;
 
-            // 只有当有搜索关键词时才执行高亮和滚动
             if (!hasSearchKeywords || index < 0 || index >= matchedLogLines.length) {
-                removeNavigationHighlights(); // 确保在不满足条件时不显示高亮
+                removeNavigationHighlights();
                 return;
             }
 
-            const originalLogIndex = matchedLogLines[index];
-            const targetLogLineContent = currentLogData[originalLogIndex]; // 获取原始日志行内容
-
-            // 1. 清除所有现有的导航高亮 (重要，避免重复高亮或旧高亮残留)
+            const originalLogIndexToHighlight = matchedLogLines[index];
             removeNavigationHighlights();
             
-            // 2. 重新构建 logContentElement 的内容，找到目标行并为其添加 navigation-highlight 类
-            const searchKeywords = logSearchInputVal.split(',')
-                                                    .map(k => k.trim())
-                                                    .filter(k => k.length > 0);
+            const targetLogLineDiv = logContentElement.querySelector(`.log-line[data-original-index="${originalLogIndexToHighlight}"]`);
             
-            // 重新过滤并生成HTML，同时应用导航高亮
-            let newInnerHTMLArray = [];
-
-            currentLogData.forEach((line, originalIdx) => {
-                const lowerCaseLine = line.toLowerCase();
-                const isSearchMatch = searchKeywords.some(keyword => lowerCaseLine.includes(keyword.toLowerCase()));
-
-                if (!hasSearchKeywords || isSearchMatch) { // 仅当无搜索或匹配搜索词时才显示该行
-                    const timeConvertedLine = convertLogTimeToLocal(line);
-                    let processedLine = highlightKeywords(timeConvertedLine, searchKeywords); // 先应用搜索高亮
-
-                    // 如果当前原始行索引是目标导航行
-                    if (originalIdx === originalLogIndex) {
-                        // 用导航高亮包裹整个处理后的行内容
-                        processedLine = `<span class="${navigationHighlightClass}">${processedLine}</span>`;
-                    }
-                    newInnerHTMLArray.push(processedLine);
+            if (targetLogLineDiv) {
+                targetLogLineDiv.innerHTML = `<span class="${navigationHighlightClass}">${targetLogLineDiv.innerHTML}</span>`;
+                
+                const highlightedElement = targetLogLineDiv.querySelector(`.${navigationHighlightClass}`);
+                if (highlightedElement) {
+                    highlightedElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
-            });
-            
-            logContentElement.innerHTML = newInnerHTMLArray.join('\n');
-
-            // 3. 滚动到高亮元素
-            const highlightedElement = logContentElement.querySelector(`.${navigationHighlightClass}`);
-            if (highlightedElement) {
-                // 使用 scrollIntoView 实现平滑滚动并居中显示
-                highlightedElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
 
         /**
-         * 导航到上一条匹配结果。
+         * Navigates to the previous match result.
          * @returns {void}
          */
         function navigatePrevMatch() {
@@ -616,12 +772,12 @@
 
             if (hasSearchKeywords && currentMatchIndex > 0) {
                 currentMatchIndex--;
-                updateMatchNavigation(false); // 不重置高亮，只更新计数和滚动
+                updateMatchNavigation(false);
             }
         }
 
         /**
-         * 导航到下一条匹配结果。
+         * Navigates to the next match result.
          * @returns {void}
          */
         function navigateNextMatch() {
@@ -630,17 +786,16 @@
 
             if (hasSearchKeywords && currentMatchIndex < matchedLogLines.length - 1) {
                 currentMatchIndex++;
-                updateMatchNavigation(false); // 不重置高亮，只更新计数和滚动
+                updateMatchNavigation(false);
             }
         }
 
         /**
-         * 初始化并管理 WebSocket 连接。
+         * Initializes and manages WebSocket connection.
          * @returns {void}
          */
         function setupWebSocket() {
             const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            // 请将这里的 'your-backend-ip:port' 替换为实际的后端 WebSocket 地址，例如 'localhost:9000' 或 '192.168.160.127:9000'
             const wsUrl = `${wsProtocol}//${window.location.host}/logs/ws`;
 
             if (logWebSocket) {
@@ -650,8 +805,8 @@
             logWebSocket = new WebSocket(wsUrl);
 
             logWebSocket.onopen = (event) => {
-                console.log('WebSocket 连接已建立 ✅');
-                updateLogStatus('正在连接到日志服务，等待实时日志...', false, true);
+                console.log('WebSocket connection established ✅');
+                updateLogStatus(translations[currentLanguage].connecting, false, true);
             };
 
             logWebSocket.onmessage = (event) => {
@@ -661,25 +816,18 @@
                 try {
                     receivedLines = JSON.parse(receivedData);
                     if (!Array.isArray(receivedLines)) {
-                        console.warn("收到的数据不是数组，忽略");
+                        console.warn("Received data is not an array, ignoring");
                         receivedLines = [];
                     }
                 } catch (e) {
-                    console.error("解析日志JSON失败:", e);
+                    console.error("Failed to parse log JSON:", e);
                     receivedLines = [];
                 }
 
-                // 打印每行日志
-                receivedLines.forEach((line, index) => {
-                    console.log(`Line ${index + 1}:`, line);
-                });
-
-                // 加入当前缓存
                 receivedLines.forEach(newLogLine => {
                     currentLogData.push(newLogLine);
                 });
 
-                // 限制缓存长度
                 while (currentLogData.length > MAX_LOG_LINES) {
                     currentLogData.shift();
                 }
@@ -690,110 +838,117 @@
                     const hasKeywords = logSearchInputVal.split(',').map(k => k.trim()).filter(k => k.length > 0).length > 0;
 
                     if (hasKeywords) {
-                        updateLogStatus(`实时日志流 (搜索: "${escapeHTML(logSearchInputVal)}")`, false, false);
+                        updateLogStatus(translations[currentLanguage].streamingSearch(escapeHTML(logSearchInputVal)), false, false);
                     } else {
-                        updateLogStatus(`实时日志流 (${currentLogData.length} 条)`, false, false);
+                        updateLogStatus(translations[currentLanguage].streaming(currentLogData.length), false, false);
                     }
                 } else {
-                    updateLogStatus(`日志流已暂停，当前缓存 ${currentLogData.length} 条。`, true, false);
+                    updateLogStatus(translations[currentLanguage].pausedStatus(currentLogData.length), true, false);
                 }
+            };
+            
+            logWebSocket.onclose = (event) => {
+                console.log('WebSocket connection closed ❌', event);
+                updateLogStatus(translations[currentLanguage].disconnected, true, true);
+                setTimeout(setupWebSocket, 3000);
+            };
+
+            logWebSocket.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                updateLogStatus(translations[currentLanguage].error, true, true);
+                logWebSocket.close();
             };
         }
 
-
-        // 页面加载完成时执行
+        // Execute when page finishes loading
         document.addEventListener('DOMContentLoaded', () => {
-            setupWebSocket(); // 建立 WebSocket 连接
+            updateUIforLanguage();
+            setupWebSocket();
 
-            // 监听搜索框输入，实时进行本地过滤
+            // Event listeners
             logSearchInput.addEventListener('input', () => {
-                currentMatchIndex = -1; // 搜索内容改变时重置匹配索引
+                currentMatchIndex = -1;
                 displayFilteredLogs();
                 if (!isLogProcessingPaused) {
                     const logSearchInputVal = logSearchInput.value.trim();
                     const hasKeywords = logSearchInputVal.split(',').map(k => k.trim()).filter(k => k.length > 0).length > 0;
 
                     if (hasKeywords) {
-                        updateLogStatus(`实时日志流 (搜索: "${escapeHTML(logSearchInputVal)}")`, false, false);
+                        updateLogStatus(translations[currentLanguage].streamingSearch(escapeHTML(logSearchInputVal)), false, false);
                     } else {
-                        updateLogStatus(`实时日志流 (${currentLogData.length} 条)`, false, false);
+                        updateLogStatus(translations[currentLanguage].streaming(currentLogData.length), false, false);
                     }
                 }
             });
 
-            // 暂停按钮点击事件
             pauseButton.addEventListener('click', () => {
                 isLogProcessingPaused = true;
-                updateLogStatus(`日志流已暂停，当前缓存 ${currentLogData.length} 条。`, true, false);
-                console.log('日志处理已暂停。');
+                updateLogStatus(translations[currentLanguage].pausedStatus(currentLogData.length), true, false);
+                console.log(translations[currentLanguage].logPauseConsole);
             });
 
-            // 恢复按钮点击事件
             resumeButton.addEventListener('click', () => {
                 isLogProcessingPaused = false;
-                console.log('日志处理已恢复。');
-                displayFilteredLogs(); // 恢复后，刷新显示当前缓存的所有日志
+                console.log(translations[currentLanguage].logResumeConsole);
+                displayFilteredLogs();
                 const logSearchInputVal = logSearchInput.value.trim();
                 const hasKeywords = logSearchInputVal.split(',').map(k => k.trim()).filter(k => k.length > 0).length > 0;
 
                 if (hasKeywords) {
-                    updateLogStatus(`实时日志流 (搜索: "${escapeHTML(logSearchInputVal)}")`, false, false);
+                    updateLogStatus(translations[currentLanguage].streamingSearch(escapeHTML(logSearchInputVal)), false, false);
                 } else {
-                    updateLogStatus(`实时日志流 (${currentLogData.length} 条)`, false, false);
+                    updateLogStatus(translations[currentLanguage].streaming(currentLogData.length), false, false);
                 }
             });
 
-            // 导航按钮事件监听
             prevMatchBtn.addEventListener('click', navigatePrevMatch);
             nextMatchBtn.addEventListener('click', navigateNextMatch);
 
-            // 添加键盘快捷键 (Alt + Up/Down)
             document.addEventListener('keydown', (e) => {
                 if (e.altKey) {
-                    if (e.key === 'ArrowUp') { // Alt + Up Arrow
+                    if (e.key === 'ArrowUp') {
                         navigatePrevMatch();
-                        e.preventDefault(); // 阻止页面滚动
-                    } else if (e.key === 'ArrowDown') { // Alt + Down Arrow
+                        e.preventDefault();
+                    } else if (e.key === 'ArrowDown') {
                         navigateNextMatch();
-                        e.preventDefault(); // 阻止页面滚动
+                        e.preventDefault();
                     }
                 }
             });
 
-            // 导出按钮事件监听
             exportLogButton.addEventListener('click', () => {
-                // 获取当前时间戳，格式化为 YYYYMMDD_HHmmss
-                const now = new Date(); // 获取当前浏览器所在系统的时间
+                const now = new Date();
                 const year = now.getFullYear();
-                const month = String(now.getMonth() + 1).padStart(2, '0'); // 月份从0开始
+                const month = String(now.getMonth() + 1).padStart(2, '0');
                 const day = String(now.getDate()).padStart(2, '0');
                 const hours = String(now.getHours()).padStart(2, '0');
                 const minutes = String(now.getMinutes()).padStart(2, '0');
                 const seconds = String(now.getSeconds()).padStart(2, '0');
 
                 const filename = `log_${year}${month}${day}_${hours}${minutes}${seconds}.log`;
-
-                // 将所有缓存的日志行合并为一个字符串
                 const logContent = currentLogData.join('\n');
+                const blob = new Blob([logContent], { type: 'text/plain;charset=utf-8' });
 
-                // 创建一个 Blob 对象
-                const blob = new Blob([logContent], { type: 'text/plain;charset=utf-8' }); // 指定 UTF-8 编码
-
-                // 创建一个临时的 URL 和下载链接
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = filename; // 设置下载文件名
-                document.body.appendChild(a); // 将a元素添加到文档中
-                a.click(); // 模拟点击下载
-                document.body.removeChild(a); // 下载完成后移除a元素
-                URL.revokeObjectURL(url); // 释放URL对象，避免内存泄漏
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
 
-                updateLogStatus(`日志已导出到 ${filename}`, false, false);
-                console.log(`日志已导出: ${filename}`);
+                updateLogStatus(translations[currentLanguage].logExported(filename), false, false);
+                console.log(`Log exported: ${filename}`);
+            });
+
+            languageToggle.addEventListener('click', () => {
+                currentLanguage = currentLanguage === 'en-US' ? 'en-US' : 'zh-CN';
+                updateUIforLanguage();
             });
         });
     </script>
 
 </body>
 </html>
+

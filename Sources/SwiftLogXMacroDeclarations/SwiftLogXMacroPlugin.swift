@@ -13,7 +13,7 @@ public struct XLogMacro: ExpressionMacro {
         }
         
         let calledExpr: ExprSyntax = """
-                await SwiftLog.logger.log(\(msgExpr))
+                 SwiftLog.logger.log(\(msgExpr))
                 """
         return calledExpr
     }

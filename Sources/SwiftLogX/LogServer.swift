@@ -10,17 +10,22 @@ import Foundation
 import Swifter
 
 final class LogServer: @unchecked Sendable {
-    static let shared = LogServer()
-
     private let server = HttpServer()
-    var logClients = NSHashTable<WebSocketSession>.weakObjects() // 自动去除断开的连接
-    
-    private init() {
+    private var logClients = NSHashTable<WebSocketSession>.weakObjects()
+    private var logBuffer: [String] = []
+    private let logQueue = DispatchQueue(label: "com.logx.log.buffer")
+    private var logBroadcastTimer: Timer? // Use a standard Timer
+    private let port: in_port_t
+
+    init(port: in_port_t) {
+        self.port = port
         setupServer()
-        start()
     }
-    
-    
+
+    deinit {
+        logBroadcastTimer?.invalidate()
+    }
+
     private func setupServer() {
         server["/"] = { _ in
             guard
@@ -31,15 +36,13 @@ final class LogServer: @unchecked Sendable {
             else {
                 return .internalServerError
             }
-            
             return .ok(.html(html))
-            
         }
-        
+
         server["/logs/ws"] = websocket(
-            text: { session, text in
-                
-            }, binary: { _, _ in }, connected: { session in
+            text: { _, _ in },
+            binary: { _, _ in },
+            connected: { session in
                 self.logClients.add(session)
                 self.broadcastBaseLog()
             },
@@ -47,63 +50,88 @@ final class LogServer: @unchecked Sendable {
                 self.logClients.remove(session)
             }
         )
-        
     }
-    
-    func broadcastBaseLog(){
+
+    func broadcastBaseLog() {
         var allLogs = ""
         if let home = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first {
             let fileName = "\(home)/nslog.txt"
             if let content = try? String(contentsOfFile: fileName) {
-                allLogs += content + "\n"
+                allLogs = content
             }
-        }
-        
-        
-        let allLogsArray = allLogs.components(separatedBy: "<<<EOL>>>").map { "💻\($0)✨" }
-        
-        // 转成 JSON 字符串
-        if let jsonData = try? JSONSerialization.data(withJSONObject: allLogsArray, options: []),
-           let jsonString = String(data: jsonData, encoding: .utf8) {
-            for client in logClients.allObjects {
-                client.writeText(jsonString)
-            }
-        } else {
-            print("❌ JSON error")
         }
 
-    }
-    
-    func broadcastLog(_ message: String) {
-        let allLogsArray = message.components(separatedBy: "<<<EOL>>>").map { "💻\($0)✨" }
-        
-        // 转成 JSON 字符串
+        let allLogsArray = allLogs.components(separatedBy: "<<<EOL>>>")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+
         if let jsonData = try? JSONSerialization.data(withJSONObject: allLogsArray, options: []),
            let jsonString = String(data: jsonData, encoding: .utf8) {
             for client in logClients.allObjects {
-                client.writeText(jsonString)
+                (client as? WebSocketSession)?.writeText(jsonString)
             }
         } else {
-            print("❌ JSON error")
+            print("❌ JSON error in broadcastBaseLog")
         }
     }
-    
-    func start(port: in_port_t = 9000)  {
+
+    func broadcastLog(_ message: String) {
+        logQueue.async {
+            self.logBuffer.append(contentsOf: message.components(separatedBy: "<<<EOL>>>").filter { !$0.isEmpty })
+        }
+    }
+
+    private func flushLogBuffer() {
+        logQueue.async {
+            if self.logBuffer.isEmpty { return }
+
+            let logsToSend = self.logBuffer
+            self.logBuffer.removeAll()
+
+            let allLogsArray = logsToSend
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+
+            if allLogsArray.isEmpty { return }
+
+            if let jsonData = try? JSONSerialization.data(withJSONObject: allLogsArray, options: []),
+               let jsonString = String(data: jsonData, encoding: .utf8) {
+                let clients = self.logClients.allObjects
+                DispatchQueue.main.async {
+                    for client in clients {
+                        (client as? WebSocketSession)?.writeText(jsonString)
+                    }
+                }
+            } else {
+                print("❌ JSON error in flushLogBuffer")
+            }
+        }
+    }
+
+    func start() {
         do {
             try server.start(port)
-            // 使用示例
+            DispatchQueue.main.async {
+                self.logBroadcastTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
+                    self?.flushLogBuffer()
+                }
+            }
             if let ip = LogIPAddress().getLocalIPAddress() {
-                print("Server started at：http://\(ip):9000")
+                print("Server started at: http://\(ip):\(port)")
             } else {
                 print("Server started at http://localhost:\(port)")
             }
-        }catch {
-            print("error is \(error.localizedDescription)")
+        } catch {
+            print("Server start error: \(error.localizedDescription)")
         }
-        
     }
-    
+
     func stop() {
         server.stop()
+        logBroadcastTimer?.invalidate()
+        logBroadcastTimer = nil
     }
 }
+
+
+

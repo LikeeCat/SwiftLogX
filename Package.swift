@@ -6,7 +6,7 @@ import CompilerPluginSupport
 
 let package = Package(
     name: "SwiftLogX",
-    platforms: [.macOS(.v13), .iOS(.v13)],
+    platforms: [.macOS(.v13), .iOS(.v14)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
@@ -43,8 +43,7 @@ let package = Package(
         .target(
             name: "SwiftLogXMacros",
             dependencies: ["SwiftLogXMacroDeclarations","SwiftLogX"],
-            path: "Sources/SwiftLogXMacros",
-            resources: [.process("Resources")]
+            path: "Sources/SwiftLogXMacros"
         ),
         // A test target used to develop the macro implementation.
         .testTarget(
