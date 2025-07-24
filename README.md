@@ -1,6 +1,6 @@
 # SwiftLogX
 
-SwiftLogX is a powerful Swift logging framework that not only captures and redirects `NSLog` output but also provides a convenient web interface for real-time viewing and management of your application's logs in a browser. Additionally, it offers an `xlog` macro for easy custom log recording in your code.
+SwiftLogX is a powerful Swift logging framework that not only captures and redirects `NSLog` output but also provides a convenient web interface for real-time viewing and management of your application's logs in a browser. Additionally, it offers an `#xlog` macro for easy custom log recording in your code.
 
 ## Features
 
@@ -8,7 +8,7 @@ SwiftLogX is a powerful Swift logging framework that not only captures and redir
 *   **Real-time Web Logging**: View application logs in real-time through a built-in HTTP server in your browser.
 *   **Log Search and Filtering**: The web interface supports searching and filtering log content.
 *   **Log Export**: Supports exporting cached logs to a file.
-*   **Custom Logging Macro**: Provides the `xlog` macro to simplify logging operations.
+*   **Custom Logging Macro**: Provides the `#xlog` macro to simplify logging operations.
 *   **Lightweight**: Easy to integrate and use.
 
 ## Installation
@@ -19,7 +19,7 @@ Add the following dependency to your `Package.swift` file:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/LikeeCat/SwiftLogX.git", from: "1.0.0") // Please replace with the actual repository URL
+    .package(url: "https://github.com/LikeeCat/SwiftLogX.git", from: "1.0.0")
 ]
 ```
 
@@ -43,19 +43,19 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
 }
 ```
 
-### 2. Log with the `xlog` Macro
+### 2. Log with the `#xlog` Macro
 
-You can use the `xlog` macro to record custom logs.
+You can use the `#xlog` macro to record custom logs.
 
 ```swift
 import SwiftLogXMacros // Import the macros module
 
 // Log a string
-xlog("This is a custom log message.")
+#xlog("This is a custom log message.")
 
 // Log a variable
 let username = "Gemini"
-xlog("User \(username) logged in.")
+#xlog("User \(username) logged in.")
 
 // Log a complex object (ensure the object is printable)
 struct MyData {
@@ -63,7 +63,7 @@ struct MyData {
     let name: String
 }
 let data = MyData(id: 1, name: "Test")
-xlog("Data object: \(data)")
+#xlog("Data object: \(data)")
 ```
 
 ### 3. Access the Web Log Interface
@@ -93,15 +93,15 @@ class ViewController: UIViewController {
 
         // Log some messages
         NSLog("This is a standard NSLog message.")
-        xlog("This is a message logged via the xlog macro.")
+        #xlog("This is a message logged via the #xlog macro.")
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             NSLog("NSLog message sent after 2 seconds.")
-            xlog("xlog message sent after 2 seconds.")
+            #xlog("#xlog message sent after 2 seconds.")
         }
 
         Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
-            xlog("Timer message sent every 5 seconds. Current time: \(Date())")
+            #xlog("Timer message sent every 5 seconds. Current time: \(Date())")
         }
     }
 }
@@ -111,7 +111,7 @@ class ViewController: UIViewController {
 
 # SwiftLogX
 
-SwiftLogX 是一个强大的 Swift 日志框架，它不仅能够捕获和重定向 `NSLog` 输出，还提供了一个便捷的 Web 界面，让您可以在浏览器中实时查看和管理应用程序的日志。此外，它还提供了一个 `xlog` 宏，方便您在代码中进行自定义日志记录。
+SwiftLogX 是一个强大的 Swift 日志框架，它不仅能够捕获和重定向 `NSLog` 输出，还提供了一个便捷的 Web 界面，让您可以在浏览器中实时查看和管理应用程序的日志。此外，它还提供了一个 `#xlog` 宏，方便您在代码中进行自定义日志记录。
 
 ## 特性
 
@@ -119,7 +119,7 @@ SwiftLogX 是一个强大的 Swift 日志框架，它不仅能够捕获和重定
 *   **实时 Web 日志**: 通过内置的 HTTP 服务器，在浏览器中实时查看应用程序日志。
 *   **日志搜索与过滤**: Web 界面支持日志内容的搜索和过滤功能。
 *   **日志导出**: 支持将缓存的日志导出为文件。
-*   **自定义日志宏**: 提供 `xlog` 宏，简化日志记录操作。
+*   **自定义日志宏**: 提供 `#xlog` 宏，简化日志记录操作。
 *   **轻量级**: 易于集成和使用。
 
 ## 安装
@@ -130,7 +130,7 @@ SwiftLogX 是一个强大的 Swift 日志框架，它不仅能够捕获和重定
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/LikeeCat/SwiftLogX.git", from: "1.0.0") // 请替换为实际的仓库地址
+    .package(url: "https://github.com/LikeeCat/SwiftLogX.git", from: "1.0.0")
 ]
 ```
 
@@ -154,19 +154,19 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
 }
 ```
 
-### 2. 使用 `xlog` 宏记录日志
+### 2. 使用 `#xlog` 宏记录日志
 
-您可以使用 `xlog` 宏来记录自定义日志。
+您可以使用 `#xlog` 宏来记录自定义日志。
 
 ```swift
 import SwiftLogXMacros // 导入宏模块
 
 // 记录字符串
-xlog("这是一条自定义日志消息。")
+#xlog("这是一条自定义日志消息。")
 
 // 记录变量
 let username = "Gemini"
-xlog("用户 \(username) 已登录。")
+#xlog("用户 \(username) 已登录。")
 
 // 记录复杂对象 (需要确保对象可被打印)
 struct MyData {
@@ -174,7 +174,7 @@ struct MyData {
     let name: String
 }
 let data = MyData(id: 1, name: "Test")
-xlog("数据对象: \(data)")
+#xlog("数据对象: \(data)")
 ```
 
 ### 3. 访问 Web 日志界面
@@ -204,15 +204,15 @@ class ViewController: UIViewController {
 
         // 记录一些日志
         NSLog("这是一个标准的 NSLog 消息。")
-        xlog("这是一条通过 xlog 宏记录的消息。")
+        #xlog("这是一条通过 #xlog 宏记录的消息。")
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             NSLog("2秒后发送的 NSLog 消息。")
-            xlog("2秒后发送的 xlog 消息。")
+            #xlog("2秒后发送的 #xlog 消息。")
         }
 
         Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
-            xlog("每5秒发送一次的定时器消息。当前时间: \(Date())")
+            #xlog("每5秒发送一次的定时器消息。当前时间: \(Date())")
         }
     }
 }
