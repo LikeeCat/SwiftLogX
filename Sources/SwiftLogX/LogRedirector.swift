@@ -23,6 +23,7 @@ final class NSLogInterceptor: @unchecked  Sendable {
 
     private let stderrProcessingQueue = DispatchQueue(label: "com.logx.log.stderrprocessing")
     private var stderrBuffer: String = ""
+    private var flushTimer: Timer?
     
     private let logStartPattern = #"(?m)^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{6}[+-]\d{4}\s[^\[]+\[\d+:\d+\]|^OSLOG-[0-9A-F]{8}(?:-[0-9A-F]{4}){3}-[0-9A-F]{12}"#
     private lazy var regex = try! NSRegularExpression(pattern: logStartPattern)
@@ -50,6 +51,10 @@ final class NSLogInterceptor: @unchecked  Sendable {
         // Redirect outputs and start capturing
         redirectAndCaptureStdout()
         redirectAndCaptureStderr()
+        
+        flushTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.flushBuffers()
+        }
     }
 
     func stop() {
@@ -66,6 +71,8 @@ final class NSLogInterceptor: @unchecked  Sendable {
         }
 
         // Close pipe ends to terminate the async loops
+        flushTimer?.invalidate()
+        flushTimer = nil
         try? stderrPipe.fileHandleForReading.close()
         try? stderrPipe.fileHandleForWriting.close()
         try? stdoutPipe.fileHandleForReading.close()
@@ -223,14 +230,7 @@ final class NSLogInterceptor: @unchecked  Sendable {
     private func processAndBroadcast(chunk: String) {
         let trimmedChunk = chunk.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedChunk.isEmpty { return }
-
-        // Regex to remove the OSLOG prefix and associated metadata
-        // This pattern matches:
-        // - OSLOG-<UUID>
-        // - followed by numbers, 'L', a single character
-        // - followed by a JSON-like structure { ... }
-        // - optionally followed by a word (like 'level')
-        // - and any trailing whitespace
+        
         let oslogPrefixPattern = #"^OSLOG-[0-9A-F]{8}(?:-[0-9A-F]{4}){3}-[0-9A-F]{12}\s+\d+\s+\d+\s+L\s+[0-9a-fA-F]+\s*\{.*?\}\s*"#
         
         var processedChunk = trimmedChunk
@@ -239,12 +239,59 @@ final class NSLogInterceptor: @unchecked  Sendable {
         }
 
         let formattedChunk = processedChunk.trimmingCharacters(in: .whitespacesAndNewlines) + "<<<EOL>>>"
+
         
         fileWriteQueue.async {
             self.logFileHandle?.write(Data(formattedChunk.utf8))
         }
         
         logDidChange.send(formattedChunk)
+    }
+    
+    private func flushBuffers() {
+        // Flush stderr buffer using its specific regex logic
+        stderrProcessingQueue.async {
+            if self.stderrBuffer.isEmpty { return }
+
+            let buffer = self.stderrBuffer
+            self.stderrBuffer = "" // Clear buffer immediately
+
+            let fullRange = NSRange(buffer.startIndex..., in: buffer)
+            let matches = self.regex.matches(in: buffer, range: fullRange)
+
+            if matches.isEmpty {
+                self.processAndBroadcast(chunk: buffer)
+                return
+            }
+
+            var logsToProcess: [String] = []
+
+            let firstMatchRange = Range(matches[0].range, in: buffer)!
+            if firstMatchRange.lowerBound != buffer.startIndex {
+                logsToProcess.append(String(buffer[..<firstMatchRange.lowerBound]))
+            }
+
+            for i in 0..<(matches.count - 1) {
+                let start = Range(matches[i].range, in: buffer)!.lowerBound
+                let end = Range(matches[i+1].range, in: buffer)!.lowerBound
+                logsToProcess.append(String(buffer[start..<end]))
+            }
+            
+            let lastMatchStart = Range(matches.last!.range, in: buffer)!.lowerBound
+            logsToProcess.append(String(buffer[lastMatchStart...]))
+
+            for log in logsToProcess {
+                self.processAndBroadcast(chunk: log)
+            }
+        }
+        
+        // Flush stdout buffer
+        stdoutProcessingQueue.async {
+            if !self.stdoutBuffer.isEmpty {
+                self.processAndBroadcast(chunk: self.stdoutBuffer)
+                self.stdoutBuffer = ""
+            }
+        }
     }
 }
 
