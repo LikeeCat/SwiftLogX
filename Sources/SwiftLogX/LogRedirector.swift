@@ -231,7 +231,15 @@ final class NSLogInterceptor: @unchecked  Sendable {
         let trimmedChunk = chunk.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedChunk.isEmpty { return }
         
-        let formattedChunk = trimmedChunk + "<<<EOL>>>"
+        let oslogPrefixPattern = #"^OSLOG-[0-9A-F]{8}(?:-[0-9A-F]{4}){3}-[0-9A-F]{12}\s+\d+\s+\d+\s+L\s+[0-9a-fA-F]+\s*\{.*?\}\s*"#
+        
+        var processedChunk = trimmedChunk
+        if let range = processedChunk.range(of: oslogPrefixPattern, options: .regularExpression) {
+            processedChunk.removeSubrange(range)
+        }
+
+        let formattedChunk = processedChunk.trimmingCharacters(in: .whitespacesAndNewlines) + "<<<EOL>>>"
+
         
         fileWriteQueue.async {
             self.logFileHandle?.write(Data(formattedChunk.utf8))
