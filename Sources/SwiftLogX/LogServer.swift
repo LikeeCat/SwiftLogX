@@ -111,15 +111,16 @@ final class LogServer: @unchecked Sendable {
     func start() {
         do {
             try server.start(port)
-            DispatchQueue.main.async {
-                self.logBroadcastTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
-                    self?.flushLogBuffer()
-                }
-            }
             if let ip = LogIPAddress().getLocalIPAddress() {
                 print("Server started at: http://\(ip):\(port)")
             } else {
                 print("Server started at http://localhost:\(port)")
+            }
+
+            DispatchQueue.main.async {
+                self.logBroadcastTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
+                    self?.flushLogBuffer()
+                }
             }
         } catch {
             print("Server start error: \(error.localizedDescription)")
