@@ -1,0 +1,570 @@
+:root {
+    --primary-color: #4361ee;
+    --secondary-color: #3a0ca3;
+    --accent-color: #4cc9f0;
+    --background-light: #f8f9fa;
+    --background-dark: #e9ecef;
+    --text-primary: #212529;
+    --text-secondary: #495057;
+    --success-color: #2ecc71;
+    --warning-color: #f39c12;
+    --danger-color: #e74c3c;
+    --border-radius: 8px;
+    --box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    --transition: all 0.25s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+/* Base Styles */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    
+    line-height: 1.5;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+#app {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Main Container */
+.container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    
+    gap: 12px;
+    padding: 16px;
+    margin-top: 130px; /* 增加顶部间距，为筛选框和日志内容留出更多空间 */
+}
+
+/* Fixed Header Container */
+.fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    padding: 0; /* 移除内边距以实现完全填满 */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid rgba(67, 97, 238, 0.1);
+    backdrop-filter: blur(10px); /* 添加毛玻璃效果 */
+}
+
+/* Top Controls Section */
+.top-controls-section {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0; /* 移除间隙以实现完全填充 */
+    width: 100%;
+    min-height: 80px; /* 设置最小高度 */
+    padding: 12px 16px; /* 在内部添加内边距 */
+    box-sizing: border-box;
+}
+
+/* Search Section */
+.log-search-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 2; /* 增大比例，让搜索区域占据更多空间 */
+    min-width: 350px; /* 增加最小宽度 */
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 12px 0 0 12px; /* 左侧圆角 */
+    padding: 16px 20px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(67, 97, 238, 0.08);
+    border-right: none; /* 移除右边框以与右侧连接 */
+}
+
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.log-search-section input {
+    flex-grow: 1;
+    width: 100%;
+    padding: 12px 16px; /* 增加内边距 */
+    padding-right: 60px;
+    border-radius: 8px;
+    border: 2px solid rgba(67, 97, 238, 0.1);
+    font-size: 14px; /* 稍微增加字体大小 */
+    background: white;
+    color: var(--text-primary);
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.log-search-section input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.15), 0 4px 12px rgba(67, 97, 238, 0.1);
+    transform: translateY(-1px);
+}
+
+.log-search-section input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+.match-count {
+    position: absolute;
+    right: 16px;
+    color: var(--primary-color);
+    font-size: 12px;
+    font-weight: 600;
+    background: linear-gradient(135deg, rgba(67, 97, 238, 0.1) 0%, rgba(67, 97, 238, 0.05) 100%);
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    border: 1px solid rgba(67, 97, 238, 0.2);
+}
+
+.search-nav-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-start; /* 左对齐 */
+}
+
+/* Operations Section */
+.operations-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* 减小间隙 */
+    flex: 1; /* 与搜索区域形成平衡 */
+    min-width: 280px;
+    background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+    border-radius: 0 12px 12px 0; /* 右侧圆角 */
+    padding: 12px 16px; /* 减小内边距 */
+    box-shadow: 0 4px 20px rgba(67, 97, 238, 0.15);
+    border: 1px solid rgba(67, 97, 238, 0.2);
+    color: white;
+}
+
+.operations-buttons-row {
+    display: flex;
+    flex-direction: row; /* 改回水平排列 */
+    align-items: center; /* 垂直居中 */
+    gap: 8px;
+    width: 100%; /* 占满宽度 */
+    justify-content: space-between; /* 平均分布 */
+}
+
+.operations-section h2 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    display: block; /* 显示标题 */
+}
+
+/* Button Styles */
+button {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 12px; /* 减小内边距 */
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px; /* 恢复原始字体大小 */
+    user-select: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* 中心对齐 */
+    gap: 6px;
+    backdrop-filter: blur(10px);
+    flex: 1; /* 所有按钮平均分配宽度 */
+    min-width: 0; /* 允许收缩 */
+    height: 36px; /* 设置固定高度，不侵占日志空间 */
+}
+
+/* 暂停/恢复按钮容器特殊处理 */
+#pauseResumeContainer {
+    display: flex;
+    gap: 4px; /* 减小间隙 */
+    flex: 1; /* 作为一个单位占据一份空间 */
+}
+
+#pauseResumeContainer button {
+    flex: 1; /* 在容器内平均分配 */
+    min-width: 0;
+}
+
+/* 搜索区域的按钮使用不同样式 */
+.log-search-section button {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    user-select: none;
+    box-shadow: 0 2px 8px rgba(67, 97, 238, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: auto; /* 搜索区域按钮保持原始大小 */
+    flex: none; /* 搜索区域按钮不参与平均分配 */
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.2) 100%);
+}
+
+.log-search-section button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+    background: linear-gradient(135deg, #5a73f0 0%, #4c1bb5 100%);
+}
+
+button:disabled {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.log-search-section button:disabled {
+    background: #e5e7eb;
+    color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+#pauseResumeContainer {
+    display: flex;
+    gap: 6px;
+}
+
+/* Loading 动画样式 */
+.loading-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    animation: spinner 0.8s linear infinite;
+    margin-right: 6px;
+}
+
+button.loading {
+    opacity: 0.8;
+    cursor: not-allowed !important;
+    pointer-events: auto;
+}
+
+button:disabled.loading {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Log Status */
+#logStatus {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.9);
+    white-space: nowrap;
+    text-align: center;
+    padding: 6px 10px; /* 减小内边距 */
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    height: 36px; /* 与按钮高度保持一致 */
+    box-sizing: border-box;
+}
+
+#logStatus.paused {
+    background: rgba(243, 156, 18, 0.2);
+    color: #fff;
+    font-weight: 600;
+    border-color: rgba(243, 156, 18, 0.3);
+}
+
+/* Spinner Animation */
+@keyframes spinner {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#logStatus.spinning::before {
+    content: '';
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    animation: spinner 0.8s linear infinite;
+}
+
+/* Log Display Section */
+.log-display-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 20px 16px 16px 16px; /* 增加顶部内边距 */
+    min-height: 0; /* 关键：确保内容可以滚动 */
+    height: 100%; /* 确保占满可用高度 */
+    overflow: hidden; /* 防止外部容器滚动 */
+    margin-top: 8px; /* 增加与上方元素的间距 */
+}
+
+#logContent {
+    flex: 1;
+    min-height: 0; /* Crucial for scrollable flex items */
+    font-family: 'SF Mono', 'Roboto Mono', Menlo, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-y: auto; /* 确保竖直滚动可用 */
+    overflow-x: hidden;
+    color: var(--text-primary);
+    scroll-behavior: smooth;
+    padding-right: 8px;
+    height: 100%; /* 确保占满父容器高度 */
+    max-height: calc(100vh - 200px); /* 限制最大高度，为头部留出空间 */
+}
+
+/* Log Line Styles */
+.log-line {
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    background: white;
+    border-left: 3px solid var(--primary-color);
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); /* Simplified shadow */
+    transition: background-color 0.2s ease-out; /* Simplified transition */
+}
+
+.log-line:nth-child(even) {
+    background: rgba(67, 97, 238, 0.03);
+}
+
+.log-line:last-child {
+    margin-bottom: 0;
+}
+
+.log-line:hover {
+    background-color: rgba(67, 97, 238, 0.06); /* Simplified hover effect */
+}
+
+/* Removed fadeInSlideUp animation to improve scroll performance */
+
+/* Highlight Styles */
+#logContent mark {
+    background: linear-gradient(120deg, rgba(76, 201, 240, 0.3) 0%, rgba(76, 201, 240, 0.7) 100%);
+    color: var(--text-primary);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+}
+
+#logContent .navigation-highlight {
+    background: linear-gradient(120deg, rgba(67, 97, 238, 0.3) 0%, rgba(67, 97, 238, 0.7) 100%);
+    color: var(--text-primary);
+    font-weight: 500;
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+    animation: pulseHighlight 0.5s ease-out 1;
+}
+
+@keyframes pulseHighlight {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.3); }
+    50% { transform: scale(1.02); box-shadow: 0 0 0 6px rgba(67, 97, 238, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(67, 97, 238, 0); }
+}
+
+/* Floating Action Buttons */
+.floating-buttons {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999; /* 增加z-index确保显示在最顶层 */
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.float-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    border: 2px solid white; /* 添加白色边框增强可见性 */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); /* 增强阴影 */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    opacity: 1; /* 确保完全不透明 */
+}
+
+.float-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    opacity: 1;
+}
+
+.float-btn:active {
+    transform: translateY(0) scale(0.95);
+    transition: all 0.1s ease;
+}
+
+.float-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3), 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Scroll to top button */
+.scroll-to-top {
+    background: linear-gradient(135deg, var(--success-color) 0%, #27ae60 100%);
+}
+
+.scroll-to-top:hover {
+    background: linear-gradient(135deg, #27ae60 0%, var(--success-color) 100%);
+}
+
+/* Scroll to bottom button */
+.scroll-to-bottom {
+    background: linear-gradient(135deg, var(--accent-color) 0%, #3498db 100%);
+}
+
+.scroll-to-bottom:hover {
+    background: linear-gradient(135deg, #3498db 0%, var(--accent-color) 100%);
+}
+
+/* Responsive adjustments for floating buttons */
+@media (max-width: 768px) {
+    .floating-buttons {
+        bottom: 16px;
+        right: 16px;
+        gap: 10px;
+    }
+    
+    .float-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 16px;
+    }
+}
+
+/* Message Styles */
+#logContent .no-match-message {
+    color: var(--danger-color);
+    text-align: center;
+    padding: 24px;
+    font-size: 14px;
+}
+
+#logContent .initial-message {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 24px;
+    font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .fixed-header {
+        padding: 8px 12px; /* 移动设备上减小内边距 */
+    }
+    
+    .top-controls-section {
+        flex-direction: column;
+        gap: 12px;
+        min-height: auto;
+        padding: 12px;
+    }
+    
+    .container {
+        padding: 12px;
+        gap: 8px;
+        margin-top: 155px; /* 移动设备上增加间距 */
+    }
+
+    .log-search-section {
+        min-width: unset;
+        border-radius: 12px; /* 移动设备上恢复完整圆角 */
+        border: 1px solid rgba(67, 97, 238, 0.08);
+    }
+    
+    .operations-section {
+        min-width: unset;
+        border-radius: 12px; /* 移动设备上恢复完整圆角 */
+        padding: 16px;
+    }
+
+    .operations-buttons-row {
+        flex-direction: row; /* 移动设备上也保持水平布局 */
+        gap: 6px; /* 减小间隙 */
+        flex-wrap: wrap; /* 允许换行 */
+    }
+
+    button {
+        padding: 6px 8px; /* 移动设备上减小内边距 */
+        font-size: 12px;
+        height: 32px; /* 移动设备上减小高度 */
+        flex: 1;
+        min-width: 60px; /* 设置最小宽度 */
+    }
+
+    #logStatus {
+        font-size: 11px;
+        padding: 4px 8px;
+        height: 32px; /* 与按钮高度保持一致 */
+    }
+
+    .log-line {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+}

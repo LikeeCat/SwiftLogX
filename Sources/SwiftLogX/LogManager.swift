@@ -14,7 +14,7 @@ public final class LogManager:@unchecked Sendable {
     
     private var logServer: LogServer?
 
-    public func setup(port: in_port_t = 9000){
+    @MainActor public func setup(port: in_port_t = 9000){
         #if DEBUG
         let loger = NSLogInterceptor.shared
         loger.start()
