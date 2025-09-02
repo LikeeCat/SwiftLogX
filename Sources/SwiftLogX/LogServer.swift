@@ -276,7 +276,7 @@ final class LogServer: @unchecked Sendable {
             // 添加文件头部信息
             let headerInfo = """
             =====================================
-            DGLogService 原始日志文件
+            SwiftLogService 原始日志文件
             导出时间: \(DateFormatter.localizedString(from: Date(), dateStyle: .medium, timeStyle: .medium))
             文件名: \(filename)
             =====================================

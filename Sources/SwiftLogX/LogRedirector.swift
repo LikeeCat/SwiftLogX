@@ -15,17 +15,17 @@ final class NSLogInterceptor {
     private var logFileHandle: FileHandle?
     private var fixLogFileHandle: FileHandle?     // 新增的处理后日志文件 fix_log.txt
 
-    private let fileWriteQueue = DispatchQueue(label: "com.dgloservice.log.filewrite")
+    private let fileWriteQueue = DispatchQueue(label: "com.swiftlogx.log.filewrite")
 
     // MARK: - Combine Publisher
     public let logDidChange = PassthroughSubject<String, Never>()
 
     // MARK: - Buffers and Processing Queues
-    private let stdoutProcessingQueue = DispatchQueue(label: "com.dgloservice.log.stdoutprocessing")
+    private let stdoutProcessingQueue = DispatchQueue(label: "com.swiftlogx.log.stdoutprocessing")
     private var stdoutBuffer: String = ""
     private var stdoutLastActivity = Date()
 
-    private let stderrProcessingQueue = DispatchQueue(label: "com.dgloservice.log.stderrprocessing")
+    private let stderrProcessingQueue = DispatchQueue(label: "com.swiftlogx.log.stderrprocessing")
     private var stderrBuffer: String = ""
     private var stderrLastActivity = Date()
     
